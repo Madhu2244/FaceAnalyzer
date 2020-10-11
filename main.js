@@ -48,6 +48,8 @@ function onStart() {
 //function executes when the Stop button is pushed.
 function onStop() {
   log('#logs', "Clicked the stop button");
+ 	log('#logs', "Attention: " + Math.round(totalAttention/counter) + "%");
+  log('#logs', "Mood: " + Math.round(totalMood/counter) + "%");
   pauseAudio();
   if (detector && detector.isRunning) {
     detector.removeEventListener();
@@ -92,16 +94,23 @@ var currentDistractionTime = 0;
 var timesPlayed = 0;
 var totalDistractionTime = 0;
 var timeLastUpdated = 0;
+
+var totalAttention = 0;
+var counter = 0;
+
+var totalMood = 0;
 detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
   $('#results').html("");
   
   var mod = timestamp % 60;
   log('#results', "Timestamp: " + Math.floor(timestamp / 60) + ":" + Math.floor(mod));
-  log('#results', "Distraction Time: " + (Math.floor(currentDistractionTime)));
+  log('#results', "Distraction Time: " + (Math.floor(currentDistractionTime / 60 )) + ":" + Math.floor(currentDistractionTime % 60));
+  
   log('#results', "Times Played: " + timesPlayed);
-  log('#results', "Totoal Distraction Time: " + (Math.floor(totalDistractionTime)));
+  log('#results', "Totoal Distraction Time: " + (Math.floor(totalDistractionTime / 60 )) + ":" + Math.floor(totalDistractionTime % 60));
 	var currentTime = timestamp;
 	
+ 
   if (faces.length == 0) 
   {
     if(timestamp-timeLastUpdated > 0.99)
@@ -125,8 +134,8 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     log('#results', "Face Detected!");
 
     log('#results', JSON.stringify(faces[0].emotions, function(key, val) {
+      totalMood = totalMood + (100-val.sadness);
       if (val.sadness < 20)
-
         return 'Happy!';
       else if (val.sadness < 50)
         return "Meh";
@@ -136,6 +145,8 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
       //val.toFixed ? Number(val.toFixed(0)) : val;
     }));
     log('#results', "Expressions: " + JSON.stringify(faces[0].expressions, function(key, val) {
+     	totalAttention = totalAttention + val.attention;
+  		counter = counter + 1;
       if (val.attention < 20) {
         return "Pay Attention!";
       } else if (val.attention < 50)
