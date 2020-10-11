@@ -38,7 +38,6 @@ function onStart() {
   if (detector && !detector.isRunning) {
     $("#logs").html("");
     detector.start();
-    audio.play();
     //var audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
     //audio.play();
 
@@ -52,6 +51,7 @@ function onStop() {
   pauseAudio();
   if (detector && detector.isRunning) {
     detector.removeEventListener();
+    pauseAudio();
     detector.stop();
   }
 };
@@ -88,16 +88,39 @@ detector.addEventListener("onStopSuccess", function() {
 //The faces object contains the list of the faces detected in an image.
 //Faces object contains probabilities for all the different expressions, emotions and appearance metrics
 //var audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3');
+var currentDistractionTime = 0;
+var timesPlayed = 0;
+var totalDistractionTime = 0;
+var timeLastUpdated = 0;
 detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
   $('#results').html("");
-  log('#results', "Timestamp: " + timestamp.toFixed(2));
-
-
-  if (faces.length == 0) {
-    audio.play();
+  
+  var mod = timestamp % 60;
+  log('#results', "Timestamp: " + Math.floor(timestamp / 60) + ":" + Math.floor(mod));
+  log('#results', "Distraction Time: " + (Math.floor(currentDistractionTime)));
+  log('#results', "Times Played: " + timesPlayed);
+  log('#results', "Totoal Distraction Time: " + (Math.floor(totalDistractionTime)));
+	var currentTime = timestamp;
+	
+  if (faces.length == 0) 
+  {
+    if(timestamp-timeLastUpdated > 0.99)
+    {
+    	currentDistractionTime = currentDistractionTime + 1;
+      totalDistractionTime = totalDistractionTime + 1;
+      timeLastUpdated = timestamp;
+    }
+    if(currentDistractionTime == 5)
+    {
+    	audio.play();
+      timesPlayed = timesPlayed +1;
+      currentDistractionTime = currentDistractionTime + .0000000001;
+    }
     log('#results', "FACE NOT DETECTED");
   }
   if (faces.length > 0) {
+  	//totalDistractionTime = totalDistractionTime + currentDistractionTime;
+  	currentDistractionTime = 0;
     audio.pause();
     log('#results', "Face Detected!");
 
@@ -114,7 +137,6 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     }));
     log('#results', "Expressions: " + JSON.stringify(faces[0].expressions, function(key, val) {
       if (val.attention < 20) {
-        audio.play();
         return "Pay Attention!";
       } else if (val.attention < 50)
         return "Chipper up";
