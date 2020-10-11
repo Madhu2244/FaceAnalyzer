@@ -133,7 +133,7 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     audio.pause();
     log('#results', "Face Detected!");
 
-    log('#results', JSON.stringify(faces[0].emotions, function(key, val) {
+    log('#results', "Mood: " + JSON.stringify(faces[0].emotions, function(key, val) {
       totalMood = totalMood + (100-val.sadness);
       if (val.sadness < 20)
         return 'Happy!';
