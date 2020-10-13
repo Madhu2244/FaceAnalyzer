@@ -1,4 +1,5 @@
 # FaceAnalyzer
+# Second Place PSI Hacks
 Worked with Kanishk Garg (https://github.com/KanishkGar/) to create this project.
 
 Used the jsfiddle from affectiva's demo and modified it. 
